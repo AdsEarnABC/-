@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рекламний Дохід</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey background */
+            color: #333;
+        }
+        .dark-mode {
+            background-color: #1a202c; /* Dark background */
+            color: #e2e8f0;
+        }
+        .dark-mode .bg-white {
+            background-color: #2d3748; /* Darker card background */
+        }
+        .dark-mode .text-gray-700 {
+            color: #e2e8f0;
+        }
+        .dark-mode .border-gray-300 {
+            border-color: #4a5568;
+        }
+        .dark-mode input, .dark-mode textarea {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border-color: #6b7280;
+        }
+        .dark-mode input:focus, .dark-mode textarea:focus {
+            border-color: #63b3ed;
+        }
+        .dark-mode .text-gray-500 {
+            color: #cbd5e0;
+        }
+        .dark-mode .hover:bg-gray-100:hover {
+            background-color: #4a5568;
+        }
+        .sidebar {
+            width: 0;
+            overflow-x: hidden;
+            transition: 0.3s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 100;
+        }
+        .sidebar.open {
+            width: 280px; /* Tailwind's w-72 */
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 90;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+        }
+        .star-icon {
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Overlay for sidebar and modals -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Login/Registration Page -->
+    <div id="auth-page" class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h2 id="auth-title" class="text-3xl font-bold text-center text-gray-800 mb-6">Вхід</h2>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email-nick" class="block text-sm font-medium text-gray-700">Нікнейм або Пошта</label>
+                    <input type="text" id="login-email-nick" name="email_nick" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Пароль</label>
+                    <input type="password" id="login-password" name="password" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                    Увійти
+                </button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Немає облікового запису? <a href="#" id="show-register" class="font-medium text-blue-600 hover:text-blue-500">Зареєструватися</a>
+                </p>
+            </form>
+
+            <!-- Registration Form -->
+            <form id="register-form" class="space-y-4 hidden">
+                <div>
+                    <label for="register-nick" class="block text-sm font-medium text-gray-700">Нікнейм</label>
+                    <input type="text" id="register-nick" name="nick" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Пошта</label>
+                    <input type="email" id="register-email" name="email" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Пароль</label>
+                    <input type="password" id="register-password" name="password" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="register-password-repeat" class="block text-sm font-medium text-gray-700">Повторіть пароль</label>
+                    <input type="password" id="register-password-repeat" name="password_repeat" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="profile-photo" class="block text-sm font-medium text-gray-700">Фото профілю (необов'язково)</label>
+                    <input type="file" id="profile-photo" accept="image/*"
+                           class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+                <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Зареєструватися
+                </button>
+                <p class="text-center text-sm text-gray-600 mt-4">
+                    Вже є обліковий запис? <a href="#" id="show-login" class="font-medium text-blue-600 hover:text-blue-500">Увійти</a>
+                </p>
+            </form>
+            <div id="auth-message" class="mt-4 text-center text-red-500 font-semibold"></div>
+        </div>
+    </div>
+
+    <!-- Main Application Page -->
+    <div id="main-app-page" class="hidden flex-grow flex flex-col">
+        <!-- Top Bar -->
+        <header class="bg-blue-600 text-white p-4 flex items-center justify-between shadow-md">
+            <button id="menu-toggle" class="text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="text-2xl font-bold">Рекламний Дохід</h1>
+            <div class="w-8"></div> <!-- Placeholder for alignment -->
+        </header>
+
+        <!-- Sidebar Menu -->
+        <nav id="sidebar" class="sidebar bg-gray-800 text-white shadow-lg flex flex-col">
+            <div class="p-4 border-b border-gray-700 flex items-center justify-between">
+                <span class="text-xl font-semibold">Меню</span>
+                <button id="close-sidebar" class="text-2xl focus:outline-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="flex-grow">
+                <li><a href="#" id="nav-profile" class="block p-4 hover:bg-gray-700 transition duration-150 ease-in-out rounded-md">Мій профіль</a></li>
+                <li><a href="#" id="nav-settings" class="block p-4 hover:bg-gray-700 transition duration-150 ease-in-out rounded-md">Налаштування</a></li>
+                <li><a href="#" id="nav-reviews" class="block p-4 hover:bg-gray-700 transition duration-150 ease-in-out rounded-md">Відгуки</a></li>
+                <li><a href="#" id="nav-about" class="block p-4 hover:bg-gray-700 transition duration-150 ease-in-out rounded-md">Про сайт</a></li>
+                <li><a href="#" id="nav-logout" class="block p-4 hover:bg-gray-700 transition duration-150 ease-in-out rounded-md text-red-400">Вийти</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="content-area" class="flex-grow p-6 flex flex-col items-center justify-start">
+            <!-- Home Section -->
+            <section id="home-section" class="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg text-center">
+                <img id="profile-avatar-display" src="https://placehold.co/128x128/cccccc/333333?text=Аватар" alt="Аватар профілю"
+                     class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-blue-400 object-cover">
+                <h2 id="display-nick" class="text-3xl font-bold text-gray-800 mb-2"></h2>
+                <p class="text-xl text-gray-700 mb-6">Баланс: <span id="display-balance" class="font-semibold text-blue-600">0.00</span> грн</p>
+
+                <p class="text-lg text-gray-600 mb-4">За перегляд однієї реклами платять від <span class="font-semibold text-green-600">2.50 грн</span> до <span class="font-semibold text-green-600">5.00 грн</span></p>
+
+                <button id="view-ad-btn"
+                        class="w-full max-w-xs py-3 px-6 bg-green-500 text-white text-xl font-bold rounded-lg shadow-md hover:bg-green-600 transition duration-150 ease-in-out transform hover:scale-105 mb-4">
+                    Переглянути рекламу
+                </button>
+
+                <button id="withdraw-btn"
+                        class="w-full max-w-xs py-3 px-6 bg-purple-600 text-white text-xl font-bold rounded-lg shadow-md hover:bg-purple-700 transition duration-150 ease-in-out transform hover:scale-105">
+                    Вивести кошти
+                </button>
+            </section>
+
+            <!-- My Profile Section -->
+            <section id="profile-section" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Мій Профіль</h2>
+                <div class="space-y-4">
+                    <div class="flex flex-col items-center mb-6">
+                        <img id="profile-avatar-edit" src="https://placehold.co/128x128/cccccc/333333?text=Аватар" alt="Аватар профілю"
+                             class="w-32 h-32 rounded-full mb-4 border-4 border-blue-400 object-cover">
+                        <label for="profile-photo-edit" class="cursor-pointer text-blue-600 hover:text-blue-800 font-medium">Змінити фото</label>
+                        <input type="file" id="profile-photo-edit" accept="image/*" class="hidden">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Нікнейм:</label>
+                        <p id="profile-nick" class="mt-1 p-2 border border-gray-300 rounded-md bg-gray-50"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Пошта:</label>
+                        <p id="profile-email" class="mt-1 p-2 border border-gray-300 rounded-md bg-gray-50"></p>
+                    </div>
+                    <button class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-150 ease-in-out">
+                        Редагувати дані (візуально)
+                    </button>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Налаштування</h2>
+                <div class="space-y-6">
+                    <div>
+                        <label for="lang-select" class="block text-sm font-medium text-gray-700 mb-2">Мова:</label>
+                        <select id="lang-select" class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="uk">Українська</option>
+                            <option value="ru">Російська</option>
+                            <option value="en">Англійська</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="theme-select" class="block text-sm font-medium text-gray-700 mb-2">Тема:</label>
+                        <select id="theme-select" class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="light">Світла</option>
+                            <option value="dark">Темна</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reviews Section -->
+            <section id="reviews-section" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Відгуки</h2>
+                <div class="flex justify-center mb-4" id="star-rating">
+                    <i class="far fa-star star-icon text-gray-400 mx-1" data-value="1"></i>
+                    <i class="far fa-star star-icon text-gray-400 mx-1" data-value="2"></i>
+                    <i class="far fa-star star-icon text-gray-400 mx-1" data-value="3"></i>
+                    <i class="far fa-star star-icon text-gray-400 mx-1" data-value="4"></i>
+                    <i class="far fa-star star-icon text-gray-400 mx-1" data-value="5"></i>
+                </div>
+                <textarea id="review-text" rows="5" placeholder="Напишіть ваш відгук тут..."
+                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm mb-4"></textarea>
+                <button id="send-review-btn"
+                        class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-150 ease-in-out">
+                    Відправити
+                </button>
+                <div id="review-message" class="mt-4 text-center text-green-500 font-semibold hidden">Дякуємо за ваш відгук!</div>
+            </section>
+
+            <!-- About Section -->
+            <section id="about-section" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Про Сайт</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    "Рекламний Дохід" - це інноваційна платформа, яка дозволяє вам заробляти гроші, просто переглядаючи рекламу. Ми співпрацюємо з провідними рекламодавцями, щоб надати вам доступ до широкого спектру рекламних кампаній. Наша місія - зробити заробіток в інтернеті доступним і простим для кожного. Приєднуйтесь до нас і почніть заробляти вже сьогодні!
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Ad Viewing Modal -->
+    <div id="ad-modal" class="modal bg-white p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">Перегляд реклами</h3>
+        <p class="text-gray-700 mb-6">Пройдіть каптчу та натисніть Continue</p>
+        <button id="ad-modal-ok-btn"
+                class="w-full py-3 px-6 bg-green-500 text-white text-lg font-bold rounded-lg shadow-md hover:bg-green-600 transition duration-150 ease-in-out">
+            ОК
+        </button>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div id="withdraw-modal" class="modal bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Вивести кошти</h3>
+        <p class="text-xl text-gray-700 mb-4">Ваш баланс: <span id="withdraw-balance-display" class="font-semibold text-blue-600">0.00</span> грн</p>
+        <div class="space-y-4">
+            <div>
+                <label for="withdraw-amount" class="block text-sm font-medium text-gray-700">Сума виводу (мін. 50 грн)</label>
+                <input type="number" id="withdraw-amount" name="amount" min="50" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="card-number" class="block text-sm font-medium text-gray-700">Номер карти</label>
+                <input type="text" id="card-number" name="card" required placeholder="XXXX XXXX XXXX XXXX"
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <button id="confirm-withdraw-btn"
+                    class="w-full py-2 px-4 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-150 ease-in-out">
+                Підтвердити
+            </button>
+            <div id="withdraw-message" class="mt-4 text-center text-red-500 font-semibold hidden"></div>
+        </div>
+    </div>
+
+    <!-- Custom Message Modal -->
+    <div id="message-modal" class="modal bg-white p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
+        <h3 id="message-modal-title" class="text-2xl font-bold text-gray-800 mb-4">Повідомлення</h3>
+        <p id="message-modal-text" class="text-gray-700 mb-6"></p>
+        <button id="message-modal-close-btn"
+                class="w-full py-3 px-6 bg-blue-500 text-white text-lg font-bold rounded-lg shadow-md hover:bg-blue-600 transition duration-150 ease-in-out">
+            Закрити
+        </button>
+    </div>
+
+
+    <script>
+        // --- DOM Elements ---
+        const authPage = document.getElementById('auth-page');
+        const mainAppPage = document.getElementById('main-app-page');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const authTitle = document.getElementById('auth-title');
+        const showRegisterBtn = document.getElementById('show-register');
+        const showLoginBtn = document.getElementById('show-login');
+        const authMessage = document.getElementById('auth-message');
+
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const overlay = document.getElementById('overlay');
+
+        const profileAvatarDisplay = document.getElementById('profile-avatar-display');
+        const displayNick = document.getElementById('display-nick');
+        const displayBalance = document.getElementById('display-balance');
+        const viewAdBtn = document.getElementById('view-ad-btn');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+
+        const contentArea = document.getElementById('content-area');
+        const homeSection = document.getElementById('home-section');
+        const profileSection = document.getElementById('profile-section');
+        const settingsSection = document.getElementById('settings-section');
+        const reviewsSection = document.getElementById('reviews-section');
+        const aboutSection = document.getElementById('about-section');
+
+        const navProfile = document.getElementById('nav-profile');
+        const navSettings = document.getElementById('nav-settings');
+        const navReviews = document.getElementById('nav-reviews');
+        const navAbout = document.getElementById('nav-about');
+        const navLogout = document.getElementById('nav-logout');
+
+        const profileAvatarEdit = document.getElementById('profile-avatar-edit');
+        const profilePhotoInputEdit = document.getElementById('profile-photo-edit');
+        const profileNickDisplay = document.getElementById('profile-nick');
+        const profileEmailDisplay = document.getElementById('profile-email');
+
+        const langSelect = document.getElementById('lang-select');
+        const themeSelect = document.getElementById('theme-select');
+
+        const starRatingContainer = document.getElementById('star-rating');
+        const reviewTextarea = document.getElementById('review-text');
+        const sendReviewBtn = document.getElementById('send-review-btn');
+        const reviewMessage = document.getElementById('review-message');
+
+        const adModal = document.getElementById('ad-modal');
+        const adModalOkBtn = document.getElementById('ad-modal-ok-btn');
+
+        const withdrawModal = document.getElementById('withdraw-modal');
+        const withdrawBalanceDisplay = document.getElementById('withdraw-balance-display');
+        const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const cardNumberInput = document.getElementById('card-number');
+        const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
+        const withdrawMessage = document.getElementById('withdraw-message');
+
+        const messageModal = document.getElementById('message-modal');
+        const messageModalTitle = document.getElementById('message-modal-title');
+        const messageModalText = document.getElementById('message-modal-text');
+        const messageModalCloseBtn = document.getElementById('message-modal-close-btn');
+
+        // --- Global State Variables ---
+        let currentUser = null;
+        let currentBalance = 0.00;
+        let selectedStars = 0; // For reviews
+
+        // --- Local Storage Keys ---
+        const USER_DATA_KEY = 'ad_earning_app_user_data';
+        const BALANCE_KEY = 'ad_earning_app_balance';
+        const LOGGED_IN_KEY = 'ad_earning_app_logged_in';
+        const THEME_KEY = 'ad_earning_app_theme';
+
+        // --- Utility Functions ---
+
+        /**
+         * Shows a custom modal message.
+         * @param {string} title - The title of the message.
+         * @param {string} message - The message text.
+         */
+        function showMessageModal(title, message) {
+            messageModalTitle.textContent = title;
+            messageModalText.textContent = message;
+            messageModal.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        /**
+         * Hides the custom message modal.
+         */
+        function hideMessageModal() {
+            messageModal.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+
+        /**
+         * Saves user data to local storage.
+         * @param {object} user - The user object to save.
+         */
+        function saveUserData(user) {
+            localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+        }
+
+        /**
+         * Loads user data from local storage.
+         * @returns {object|null} The user object or null if not found.
+         */
+        function loadUserData() {
+            const data = localStorage.getItem(USER_DATA_KEY);
+            return data ? JSON.parse(data) : null;
+        }
+
+        /**
+         * Saves the current balance to local storage.
+         */
+        function saveBalance() {
+            localStorage.setItem(BALANCE_KEY, currentBalance.toFixed(2));
+        }
+
+        /**
+         * Loads the balance from local storage.
+         * @returns {number} The loaded balance, defaults to 0.00 if not found.
+         */
+        function loadBalance() {
+            const balance = localStorage.getItem(BALANCE_KEY);
+            return balance ? parseFloat(balance) : 0.00;
+        }
+
+        /**
+         * Sets the logged-in status in local storage.
+         * @param {boolean} status - True if logged in, false otherwise.
+         */
+        function setLoggedInStatus(status) {
+            localStorage.setItem(LOGGED_IN_KEY, status);
+        }
+
+        /**
+         * Checks the logged-in status from local storage.
+         * @returns {boolean} True if logged in, false otherwise.
+         */
+        function isLoggedIn() {
+            return localStorage.getItem(LOGGED_IN_KEY) === 'true';
+        }
+
+        /**
+         * Updates the displayed balance on the main page and withdrawal modal.
+         */
+        function updateBalanceDisplay() {
+            displayBalance.textContent = currentBalance.toFixed(2);
+            withdrawBalanceDisplay.textContent = currentBalance.toFixed(2);
+        }
+
+        /**
+         * Switches between login and registration forms.
+         * @param {string} formType - 'login' or 'register'.
+         */
+        function showAuthForm(formType) {
+            if (formType === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                authTitle.textContent = 'Вхід';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                authTitle.textContent = 'Реєстрація';
+            }
+            authMessage.textContent = ''; // Clear messages
+        }
+
+        /**
+         * Hides all content sections and shows the specified one.
+         * @param {HTMLElement} sectionToShow - The section to make visible.
+         */
+        function showSection(sectionToShow) {
+            homeSection.classList.add('hidden');
+            profileSection.classList.add('hidden');
+            settingsSection.classList.add('hidden');
+            reviewsSection.classList.add('hidden');
+            aboutSection.classList.add('hidden');
+            sectionToShow.classList.remove('hidden');
+            closeSidebar(); // Close sidebar after navigation
+        }
+
+        /**
+         * Toggles the sidebar visibility.
+         */
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
+
+        /**
+         * Closes the sidebar.
+         */
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.style.display = 'none';
+        }
+
+        /**
+         * Applies the selected theme (light/dark).
+         * @param {string} theme - 'light' or 'dark'.
+         */
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            localStorage.setItem(THEME_KEY, theme);
+            themeSelect.value = theme; // Update dropdown
+        }
+
+        // --- Event Handlers ---
+
+        // Authentication Forms
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthForm('register');
+        });
+
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showAuthForm('login');
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const emailNick = loginForm['login-email-nick'].value;
+            const password = loginForm['login-password'].value;
+
+            if (currentUser && (currentUser.nick === emailNick || currentUser.email === emailNick) && currentUser.password === password) {
+                setLoggedInStatus(true);
+                initMainApp();
+            } else {
+                authMessage.textContent = 'Невірний нікнейм/пошта або пароль.';
+            }
+        });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nick = registerForm['register-nick'].value;
+            const email = registerForm['register-email'].value;
+            const password = registerForm['register-password'].value;
+            const passwordRepeat = registerForm['register-password-repeat'].value;
+            const photoFile = registerForm['profile-photo'].files[0];
+
+            if (password !== passwordRepeat) {
+                authMessage.textContent = 'Паролі не співпадають.';
+                return;
+            }
+
+            // Simulate saving photo to local storage as base64 (for visual only)
+            let photoBase64 = '';
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    photoBase64 = event.target.result;
+                    currentUser = { nick, email, password, photo: photoBase64 };
+                    saveUserData(currentUser);
+                    setLoggedInStatus(true);
+                    initMainApp();
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                currentUser = { nick, email, password, photo: '' }; // No photo
+                saveUserData(currentUser);
+                setLoggedInStatus(true);
+                initMainApp();
+            }
+        });
+
+        // Sidebar Navigation
+        menuToggle.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar); // Close sidebar when clicking outside
+
+        navProfile.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection(profileSection);
+            profileNickDisplay.textContent = currentUser.nick;
+            profileEmailDisplay.textContent = currentUser.email;
+            profileAvatarEdit.src = currentUser.photo || 'https://placehold.co/128x128/cccccc/333333?text=Аватар';
+        });
+
+        profilePhotoInputEdit.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    profileAvatarEdit.src = event.target.result;
+                    profileAvatarDisplay.src = event.target.result; // Update main page avatar
+                    currentUser.photo = event.target.result;
+                    saveUserData(currentUser);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        navSettings.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection(settingsSection);
+        });
+
+        langSelect.addEventListener('change', (e) => {
+            // In a real app, this would change the language of the UI
+            showMessageModal('Налаштування мови', `Мова змінена на ${e.target.options[e.target.selectedIndex].text} (візуально).`);
+        });
+
+        themeSelect.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+
+        navReviews.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection(reviewsSection);
+            // Reset stars and message
+            selectedStars = 0;
+            starRatingContainer.querySelectorAll('.star-icon').forEach(star => {
+                star.classList.remove('fas', 'text-yellow-400');
+                star.classList.add('far', 'text-gray-400');
+            });
+            reviewTextarea.value = '';
+            reviewMessage.classList.add('hidden');
+        });
+
+        starRatingContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('star-icon')) {
+                selectedStars = parseInt(e.target.dataset.value);
+                starRatingContainer.querySelectorAll('.star-icon').forEach(star => {
+                    if (parseInt(star.dataset.value) <= selectedStars) {
+                        star.classList.remove('far', 'text-gray-400');
+                        star.classList.add('fas', 'text-yellow-400');
+                    } else {
+                        star.classList.remove('fas', 'text-yellow-400');
+                        star.classList.add('far', 'text-gray-400');
+                    }
+                });
+            }
+        });
+
+        sendReviewBtn.addEventListener('click', () => {
+            if (selectedStars > 0 && reviewTextarea.value.trim() !== '') {
+                reviewMessage.classList.remove('hidden');
+                showMessageModal('Відгук відправлено', 'Дякуємо за ваш відгук! Ваша думка важлива для нас.');
+            } else {
+                showMessageModal('Помилка', 'Будь ласка, оберіть кількість зірок та напишіть відгук.');
+            }
+        });
+
+        navAbout.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection(aboutSection);
+        });
+
+        navLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            setLoggedInStatus(false);
+            currentUser = null;
+            currentBalance = 0.00; // Reset balance on logout
+            saveBalance(); // Save reset balance
+            localStorage.removeItem(USER_DATA_KEY); // Clear user data
+            authPage.classList.remove('hidden');
+            mainAppPage.classList.add('hidden');
+            showAuthForm('login'); // Go back to login form
+            authMessage.textContent = 'Ви успішно вийшли з облікового запису.';
+        });
+
+        // Ad Viewing Logic
+        viewAdBtn.addEventListener('click', () => {
+            adModal.style.display = 'block';
+            overlay.style.display = 'block';
+        });
+
+        adModalOkBtn.addEventListener('click', () => {
+            adModal.style.display = 'none';
+            overlay.style.display = 'none';
+
+            // Generate random amount between 2.50 and 5.00 UAH
+            const earnedAmount = (Math.random() * (5.00 - 2.50) + 2.50);
+            currentBalance += earnedAmount;
+            saveBalance();
+            updateBalanceDisplay();
+
+            // Redirect to the external site
+            window.location.href = 'https://tpi.li/N5NvDmh';
+        });
+
+        // Withdrawal Logic
+        withdrawBtn.addEventListener('click', () => {
+            withdrawModal.style.display = 'block';
+            overlay.style.display = 'block';
+            withdrawBalanceDisplay.textContent = currentBalance.toFixed(2);
+            withdrawAmountInput.value = '';
+            cardNumberInput.value = '';
+            withdrawMessage.classList.add('hidden'); // Clear previous messages
+        });
+
+        confirmWithdrawBtn.addEventListener('click', () => {
+            const amount = parseFloat(withdrawAmountInput.value);
+            const cardNumber = cardNumberInput.value.trim();
+            const minWithdrawal = 50.00; // Змінено з 25.00 на 50.00
+
+            if (isNaN(amount) || amount <= 0) {
+                withdrawMessage.textContent = 'Будь ласка, введіть дійсну суму.';
+                withdrawMessage.classList.remove('hidden');
+                return;
+            }
+
+            if (amount < minWithdrawal) {
+                withdrawMessage.textContent = `Мінімальна сума для виводу ${minWithdrawal.toFixed(2)} грн.`;
+                withdrawMessage.classList.remove('hidden');
+                return;
+            }
+
+            if (amount > currentBalance) {
+                withdrawMessage.textContent = 'Недостатньо коштів на балансі.';
+                withdrawMessage.classList.remove('hidden');
+                return;
+            }
+
+            if (cardNumber.length < 16 || !/^\d{16}$/.test(cardNumber.replace(/\s/g, ''))) { // Basic 16-digit check
+                withdrawMessage.textContent = 'Будь ласка, введіть дійсний номер карти (16 цифр).';
+                withdrawMessage.classList.remove('hidden');
+                return;
+            }
+
+            // Simulate withdrawal success
+            currentBalance -= amount;
+            saveBalance();
+            updateBalanceDisplay();
+
+            withdrawModal.style.display = 'none';
+            overlay.style.display = 'none';
+            showMessageModal('Заявку подано', 'Заявку подано, очікуйте виведення протягом 2 днів.');
+        });
+
+        // Close modals when clicking overlay or close button
+        overlay.addEventListener('click', () => {
+            adModal.style.display = 'none';
+            withdrawModal.style.display = 'none';
+            messageModal.style.display = 'none';
+            closeSidebar(); // Ensure sidebar also closes
+        });
+
+        messageModalCloseBtn.addEventListener('click', hideMessageModal);
+
+        // --- Initialization ---
+        function initMainApp() {
+            authPage.classList.add('hidden');
+            mainAppPage.classList.remove('hidden');
+            displayNick.textContent = currentUser.nick;
+            profileAvatarDisplay.src = currentUser.photo || 'https://placehold.co/128x128/cccccc/333333?text=Аватар';
+            currentBalance = loadBalance();
+            updateBalanceDisplay();
+            showSection(homeSection); // Show home section by default
+            applyTheme(localStorage.getItem(THEME_KEY) || 'light'); // Apply saved theme or default to light
+        }
+
+        // Check if user is already logged in on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            currentUser = loadUserData();
+            if (isLoggedIn() && currentUser) {
+                initMainApp();
+            } else {
+                authPage.classList.remove('hidden');
+                mainAppPage.classList.add('hidden');
+                showAuthForm('login');
+                applyTheme(localStorage.getItem(THEME_KEY) || 'light'); // Apply theme even on auth page
+            }
+        });
+
+    </script>
+</body>
+</html>
